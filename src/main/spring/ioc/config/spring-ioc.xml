@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:utils="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/util
+       http://www.springframework.org/schema/util/spring-util-4.0.xsd">
+    <import resource="classpath:spring/ioc/config/spring-ioc2.xml"/>
+    <import resource="spring-ioc3.xml"/>
+    <!--
+        注册一个对象
+        id:为bean的唯一标识
+    -->
+    <bean id="person" class="spring.ioc.bean.Person">
+        <!--
+            property调用setter赋值
+        -->
+        <property name="name" value="alone"/>
+        <property name="age" value="10"/>
+        <property name="email" value="alone@qq.com"/>
+        <property name="gender" value="male"/>
+    </bean>
+
+    <bean class="spring.ioc.bean.Person" id="dsx">
+        <!--String name, Integer age, String gender, String email-->
+        <constructor-arg name="name" value="dsx"/>
+        <constructor-arg name="age" value="20"/>
+        <constructor-arg name="gender" value="female"/>
+        <constructor-arg name="email" value="dsx@qq.com"/>
+    </bean>
+
+    <!--
+        以下标的方式标注构造器属性位置
+    -->
+    <bean id="alone" class="spring.ioc.bean.Person">
+        <constructor-arg value="alone" index="0"/>
+        <constructor-arg value="20" index="1"/>
+        <constructor-arg value="male" index="2"/>
+        <constructor-arg value="alone@qq.com" index="3"/>
+    </bean>
+
+    <!--使用p标签创建组件-->
+    <bean class="spring.ioc.bean.Person" id="lj" p:age="20" p:email="lj@qq.com" p:gender="male" p:name="lj"/>
+
+    <!--
+        测试绑定各种数据
+        1,null
+        2,为对象属性赋值使用bean标签或者外联
+    -->
+    <bean id="testParameter" class="spring.ioc.bean.Person">
+        <property name="name">
+            <null></null>       <!--为属性赋值为null-->
+        </property>
+        <!--
+            属性为对象,可以内部创建,也可以外联
+        -->
+        <property name="car">
+            <bean class="spring.ioc.bean.Car">
+                <property name="price" value="10"/>
+                <property name="brand" value="byd"/>
+                <property name="color" value="yellow"/>
+            </bean>
+        </property>
+        <property name="books">
+            <list>
+                <bean class="spring.ioc.bean.Book">
+                    <constructor-arg name="bookName" value="thinkJava"/>
+                    <constructor-arg name="author" value="bruce"/>
+                </bean>
+                <ref bean="book"/>
+            </list>
+        </property>
+        <property name="maps">
+            <map>
+                <entry value="mapValue" key="mapKey"/>
+                <entry key="book" value-ref="book"/>
+                <entry key="car">
+                    <bean class="spring.ioc.bean.Car">
+                        <property name="color" value="green"/>
+                        <property name="brand" value="zw"/>
+                        <property name="price" value="20"/>
+                    </bean>
+                </entry>
+            </map>
+        </property>
+        <property name="properties">
+            <props>
+                <prop key="username">
+                    dsx<!--值直接写在标签体中-->
+                </prop>
+            </props>
+        </property>
+    </bean>
+    <bean class="spring.ioc.bean.Car" id="car">
+        <property name="brand" value="bmw"/>
+        <property name="color" value="yellow"/>
+        <property name="price" value="20"/>
+    </bean>
+    <bean id="book" class="spring.ioc.bean.Book">
+        <property name="author" value="kkk"/>
+        <property name="bookName" value="lll"/>
+    </bean>
+
+    <bean id="lr" class="spring.ioc.bean.Person">
+        <property name="maps" ref="utilMap"/>
+    </bean>
+    <utils:map id="utilMap">
+        <entry key="username" value="alone"/>
+        <entry key="password" value="alone"/>
+    </utils:map>
+
+    <bean id="ouYang" class="spring.ioc.bean.Person">
+        <property name="car" ref="car"/>
+        <!--级联属性,为属性的属性赋值,会改变级联属性本身的属性值-->
+        <property name="car.price" value="30"/>
+    </bean>
+</beans>

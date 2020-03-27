@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mybatis.mapper.EmployeeMapper">
+
+    <select id="getEmpById" resultType="employee">
+        select * from employee where id = #{id}
+    </select>
+    <select id="getEmpByIdAndName" resultType="employee">
+        select * from employee where id = #{id} and last_name = #{lastName}
+    </select>
+    <select id="getEmpByMap" resultType="employee">
+        select * from employee where id = #{id} and last_name = #{lastName}
+    </select>
+    <select id="getEmpByList" resultType="employee">
+        select * from employee where id = #{list[0]}
+    </select>
+
+    <!--获取自增主键,用于返回插入数量-->
+    <insert id="addEmp" parameterType="employee" useGeneratedKeys="true" keyProperty="id">
+        insert into employee (last_name, gender, email) values (#{lastName},#{gender},#{email})
+    </insert>
+    <update id="updateEmp" parameterType="mybatis.bean.Employee">
+        update employee set last_name = #{lastName}, gender = #{gender},email = #{email} where id = #{id}
+    </update>
+    <delete id="delete">
+        delete from employee where id = #{id}
+    </delete>
+    <select id="getEmployees" resultType="employee">
+        select * from employee
+    </select>
+</mapper>

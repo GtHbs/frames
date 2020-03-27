@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mybatis.mapper.EmployeesMapper">
+
+    <select id="getAllEmpById" resultType="employee">
+        select * from employee where dept_id = #{dept_id}
+    </select>
+
+    <!--对于返回集合,返回值类型需要些集合中元素的类型-->
+    <select id="getEmpByLikeName" resultType="employee">
+        select * from employee where last_name like #{lastName}
+    </select>
+    <!--
+        使用map封装结果集
+    -->
+    <select id="getEmpMatchToMap" resultType="map">
+        select * from employee where id = #{id}
+    </select>
+
+    <select id="getEmpByLastNameLike" resultType="employee">
+        select * from employee where last_name like #{lastName}
+    </select>
+
+    <!--====================================================-->
+    <!--
+        自定义JavaBean封装规则
+        type:自定义的Java类型,一般使用全类名
+    -->
+    <resultMap id="defineEmp" type="mybatis.bean.Employee">
+        <!--
+            指定主键列
+            column:数据库中的列
+            property:bean中的属性
+        -->
+        <id column="id" property="id"/>
+        <!--
+            普通属性使用result封装,不指定的列会自动封装
+        -->
+        <result column="last_name" property="lastName"/>
+        <result column="gender" property="gender"/>
+        <result column="email" property="email"/>
+    </resultMap>
+
+    <select id="getEmpById" resultMap="defineEmp">
+        select * from employee where id = #{id}
+    </select>
+
+    <!--
+        场景一:查询出员工信息后再次查询其部门信息
+
+    -->
+    <resultMap id="defineMap" type="mybatis.bean.Employee">
+        <id column="id" property="id"/>
+        <result column="last_name" property="lastName"/>
+        <result column="gender" property="gender"/>
+        <result column="email" property="email"/>
+        <!--间接关联-->
+        <result column="did" property="department.id"/>
+        <result column="dept_name" property="department.deptName"/>
+    </resultMap>
+
+    <resultMap id="defineMapAssociation" type="mybatis.bean.Employee">
+        <id column="id" property="id"/>
+        <result column="last_name" property="lastName"/>
+        <result column="gender" property="gender"/>
+        <result column="email" property="email"/>
+        <!--
+            指定联合属性
+            property为employee中的属性名
+            javaType为关联的对象
+        -->
+        <association property="department" javaType="department">
+            <id column="did" property="id"/>
+            <result column="dept_name" property="deptName"></result>
+        </association>
+    </resultMap>
+    <select id="getEmpAndDept" resultMap="defineMapAssociation">
+        select * from employee e,department d where e.dept_id = d.did and e.id = #{id}
+    </select>
+
+    <!--
+        使用association进行分步查询:用于一对一查询
+    -->
+    <resultMap id="getEmpByStep" type="mybatis.bean.Employee">
+        <id column="id" property="id"/>
+        <result column="gender" property="gender"/>
+        <result column="last_name" property="lastName"/>
+        <result column="email" property="email"/>
+        <!--
+            select表示根据其查询结果封装信息
+            column为employee中查询出的部门id再到DepartmentMapper中查询部门信息
+        -->
+        <association property="department" select="mybatis.mapper.DepartmentMapper.getDeptById"
+                     column="dept_id">
+        </association>
+    </resultMap>
+
+    <!--使用鉴别器-->
+    <resultMap id="testDiscriminator" type="employee">
+        <id column="id" property="id"/>
+        <result column="gender" property="gender"/>
+        <result column="last_name" property="lastName"/>
+        <result column="email" property="email"/>
+        <!--
+            javaType为字段对应的Java类型
+        -->
+        <discriminator javaType="string" column="gender">
+            <!--为女生查询部门信息-->
+            <case value="0" resultType="employee">
+                <association property="department" select="mybatis.mapper.DepartmentMapper.getDeptById"
+                             column="dept_id">
+                </association>
+            </case>
+            <!--为男生查询除部门外的信息-->
+            <case value="1" resultType="employee">
+                <id column="id" property="id"/>
+                <result column="gender" property="gender"/>
+                <result column="last_name" property="lastName"/>
+                <result column="last_name" property="email"/>
+            </case>
+        </discriminator>
+    </resultMap>
+    <!--
+        执行步骤:先执行下面的语句,查询出对应的employee对象,在根据association关联查询部门信息
+    -->
+    <select id="getEmpByIdStep" resultMap="testDiscriminator">
+        select * from employee where id = #{id}
+    </select>
+
+
+
+</mapper>

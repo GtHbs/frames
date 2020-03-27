@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <!--
+        1,可以引入外部properties内容
+    -->
+    <properties resource="mybatis/config/dbcp.properties"/>
+    <settings>
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+        <!--因为oracle中不支持null字段-->
+        <setting name="jdbcTypeForNull" value="NULL"/>
+        <!--使用延时加载,类级别-->
+        <setting name="lazyLoadingEnabled" value="true"/>
+        <!--延时加载,属性级别-->
+        <setting name="aggressiveLazyLoading" value="false"/>
+        <!--开启全局缓存-->
+        <setting name="cacheEnabled" value="true"/>
+        <!--
+            本地缓存作用域
+                   session:一次会话
+                   statement:一次执行,等于没有缓存禁用一级缓存
+        -->
+<!--        <setting name="localCacheScope" value="SESSION"/>-->
+    </settings>
+    <!--
+        别名处理器,别名不区分大小写
+    -->
+    <typeAliases>
+        <!--        <typeAlias type="mybatis.bean.Employee" alias="employee"></typeAlias>-->
+        <package name="mybatis.bean"/>
+    </typeAliases>
+    <plugins>
+        <plugin interceptor="com.github.pagehelper.PageHelper"></plugin>
+    </plugins>
+    <environments default="development" >
+        <environment id="test">
+            <!--
+                事务处理方式,一般使用Spring的事务处理
+                JDBC:
+                MANAGE:
+            -->
+            <transactionManager type="JDBC"></transactionManager>
+            <!--
+                使用数据源:
+                    POOLED
+                    UNPOOLED
+                    JNDI
+                    也可以使用自定义数据源实现DataSourceFactory接口
+            -->
+            <dataSource type="mybatis.dataSource.Druid"></dataSource>
+        </environment>
+        <environment id="development">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <property name="driver" value="${driverClassName}"/>
+                <property name="url" value="${url}"/>
+                <property name="username" value="${user}"/>
+                <property name="password" value="${password}"/>
+            </dataSource>
+        </environment>
+    </environments>
+    <!--支持多数据库-->
+    <databaseIdProvider type="DB_VENDOR">
+        <property name="MySQL" value="mysql"/>
+        <property name="Oracle" value="oracle"/>
+        <property name="SQL Server" value="sqlServer"/>
+    </databaseIdProvider>
+    <mappers>
+        <mapper resource="mybatis/config/EmployeeMapper.xml"/>
+        <mapper resource="mybatis/config/EmployeesMapper"/>
+        <mapper resource="mybatis/config/DepartmentMapper"/>
+        <mapper resource="mybatis/config/DynamicSqlMapper"/>
+        <mapper resource="mybatis/config/CacheMapper"/>
+    </mappers>
+</configuration>

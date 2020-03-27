@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mybatis.mapper.DepartmentMapper">
+    <select id="getDeptById" resultType="department">
+        select did id,dept_name deptName from department where did = #{id}
+    </select>
+    <resultMap id="getAllEmp" type="department">
+        <id column="did" property="id"/>
+        <result column="dept_name" property="deptName"/>
+        <!--
+            collection用于封装集合对象
+        -->
+        <collection property="employees" ofType="employee">
+            <id column="id" property="id"/>
+            <result column="gender" property="gender"/>
+            <result column="email" property="email"/>
+            <result column="last_name" property="lastName"/>
+        </collection>
+    </resultMap>
+    <select id="getAllEmpAndDept" resultMap="getAllEmp">
+        select d.*,e.* from department d left join employee e on d.did = e.dept_id where d.did = #{did}
+    </select>
+    <resultMap id="getAllEmpByAssociation" type="department">
+        <id column="did" property="id"/>
+        <result column="dept_name" property="deptName"/>
+        <!--
+            column可以指定多个值传递给延时查询的列:用于一对多查询
+        -->
+        <collection property="employees" select="mybatis.mapper.EmployeesMapper.getAllEmpById"
+                    column="{dept_id = did}" fetchType="lazy"/>
+    </resultMap>
+    <select id="getAllEmpByAssociation" resultMap="getAllEmpByAssociation">
+        select * from department where did = #{did}
+    </select>
+</mapper>

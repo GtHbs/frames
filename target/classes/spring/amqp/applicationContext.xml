@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/rabbit http://www.springframework.org/schema/rabbit/spring-rabbit.xsd">
+    <description>amqp连接服务器</description>
+    <context:property-placeholder location="classpath:spring/amqp/amqp.properties"/>
+    <rabbit:connection-factory id="connectionFactory" host="${mq.host}" username="${mq.username}"
+    password="${mq.password}" port="${mq.port}" virtual-host="${mq.vhost}"/>
+    <rabbit:admin connection-factory="connectionFactory"/>
+    <rabbit:template exchange="amqpExchange" id="amqpTemplate" connection-factory="connectionFactory"
+    message-converter="converter" />
+    <bean id="converter" class="org.springframework.amqp.support.converter.Jackson2JsonMessageConverter"></bean>
+    <!--
+        durable:是否持久化
+        auto-delete:使用完后是否自动删除
+        exclusive:仅创建者使用的队列,断开后自动删除
+    -->
+    <rabbit:queue id="test_spring_queue" name="test_spring_queue" durable="true" auto-delete="false" exclusive="false"/>
+    <rabbit:direct-exchange name="test_exchange_direct" durable="true" auto-delete="false" id="directExchange">
+        <rabbit:bindings>
+            <rabbit:binding queue="test_spring_queue" key="test_spring_queue"/>
+        </rabbit:bindings>
+    </rabbit:direct-exchange>
+    <rabbit:listener-container connection-factory="connectionFactory" acknowledge="auto">
+        <rabbit:listener ref="receiver" queues="test_spring_queue"/>
+    </rabbit:listener-container>
+    <bean class="spring.amqp.Receiver" id="receiver"/>
+</beans>

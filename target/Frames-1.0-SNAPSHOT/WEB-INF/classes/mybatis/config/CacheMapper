@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mybatis.mapper.CacheMapper">
+    <!--
+        eviction:缓存的回收策略
+                 LRU:最近最少使用(默认)
+                 FIFO:先进先出
+                 SOFT:软引用
+                 WEAK:弱引用
+        flushInterval:缓存刷新间隔(多长时间清空一次,默认为不清空时间单位为秒)
+        readOnly:
+                true:只读,只从缓存中读取数据,mybatis会将缓存对象的引用交给用户,速度快不安全
+                false:非只读,使用反序列化克隆一份数据给用户,速度慢安全
+        size:存放元素个数
+        type:缓存全类名,可以自定义需要实现cache接口
+    -->
+    <cache/>
+    <!--
+        useCache关闭的是二级缓存
+    -->
+    <select id="getEmpById" resultType="employee" useCache="true">
+        select * from employee where id = #{id}
+    </select>
+    <!--
+        flushCache会将一级缓存和二级缓存都清空
+    -->
+    <insert id="insertEmployee" flushCache="false">
+        insert into employee (last_name, gender, email, dept_id) VALUES
+        (#{lastName},#{gender},#{email},#{department.dept_id})
+    </insert>
+</mapper>

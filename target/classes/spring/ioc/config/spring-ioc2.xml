@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!--
+        默认的组件创建顺序是按照配置顺序创建的
+    -->
+    <!--通过abstract属性可以让该组件成为继承组件,只能被继承不能被调用-->
+    <bean id="person" class="spring.ioc.bean.Person" abstract="true">
+        <property name="name" value="alone"/>
+        <property name="age" value="10"/>
+        <property name="email" value="alone@qq.com"/>
+        <property name="gender" value="male"/>
+    </bean>
+
+    <!--类的继承-->
+    <bean id="parentPerson" class="spring.ioc.bean.Person" parent="person">
+        <property name="name" value="dsx"/>
+    </bean>
+
+    <!--
+        bean的作用域:就是指bean是否是单实例,默认为单实例的
+        scope:
+            (1)prototype:多实例
+                    1,容器启动不会创建组件对象
+                    2,在获取时创建对象
+                    3,每次获取都会创建一个新的实例
+            (2)singleton:单实例
+                    1,在容器启动完成之前就已经创建完成,保存在容器中了
+                    2,容器中只会保存一个组件对象
+            (3)request:每次请求
+            (4)session:同一次会话
+    -->
+    <bean id="testBeanScope" class="spring.ioc.bean.Person" scope="prototype"/>
+    <!--
+        使用工厂模式创建组件
+            1,静态工厂
+            2,实例工厂
+    -->
+    <bean class="spring.ioc.factory.AirplaneStaticFactory" factory-method="getInstance" id="staticFactory">
+        <constructor-arg name="commander" value="alone"/>
+    </bean>
+
+    <bean id="instanceFactory" class="spring.ioc.factory.AirplaneInstanceFactory"/>
+    <bean id="airplane" class="spring.ioc.bean.Airplane" factory-bean="instanceFactory"
+          factory-method="getInstance">
+        <constructor-arg name="commander" value="alone"/>
+    </bean>
+
+    <!--
+        在使用实现了FactoryBean接口生成组件时只有获取时才会创建,
+        在ioc容器初始化时不会创建组件,无论是单例还是原型
+    -->
+    <bean class="spring.ioc.factory.FactoryBeanImpl" id="factoryBean"/>
+
+    <!--
+        可以自定义初始化和销毁的方法,但是方法不能带有参数
+    -->
+    <bean id="book" class="spring.ioc.bean.Book" init-method="init" destroy-method="destroy" scope="singleton"/>
+    <!--引入外部配置文件-->
+    <context:property-placeholder location="classpath:spring/config/dbcp.properties"/>
+    <!--配置后置处理器-->
+    <bean class="spring.ioc.bean.BeanPostProcessorImpl" id="processor"></bean>
+    <!--配置数据源c3p0-->
+    <bean class="com.mchange.v2.c3p0.ComboPooledDataSource" id="dataSource">
+        <property name="user" value="${jdbc.user}"/>
+        <property name="password" value="${password}"/>
+        <property name="jdbcUrl" value="${url}"/>
+        <property name="driverClass" value="${driverClassName}"/>
+    </bean>
+</beans>

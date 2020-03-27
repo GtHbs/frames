@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mybatis.mapper.DynamicSqlMapper">
+    <select id="getEmpByConditions" resultType="employee">
+        select * from employee
+        <where>
+            <if test="id != null">
+                id = #{id}
+            </if>
+            <if test="lastName != null and lastName.trim() != ''">
+                and last_name like  #{lastName}
+            </if>
+            <if test="gender == '0' || gender == '1'">
+                and gender = #{gender}
+            </if>
+            <if test="email != null and email.trim() != ''">
+                and email = #{email}
+            </if>
+        </where>
+    </select>
+
+    <select id="getEmpByConditionTrim" resultType="employee">
+        select * from employee
+        <trim prefix="where" suffixOverrides="and">
+            <if test="id != null">
+                id = #{id} and
+            </if>
+            <if test="lastName != null and lastName.trim() != ''">
+                last_name like  #{lastName} and
+            </if>
+            <if test="gender == '0' || gender == '1'">
+                gender = #{gender} and
+            </if>
+            <if test="email != null and email.trim() != ''">
+                email = #{email}
+            </if>
+        </trim>
+    </select>
+
+    <select id="getEmpByConditionChoose" resultType="employee">
+        select * from employee
+        <where>
+            <choose>
+                <when test="id != null">
+                    id = #{id}
+                </when>
+                <when test="lastName != null">
+                    last_name like #{lastName}
+                </when>
+                <when test="email != null">
+                    email = #{email}
+                </when>
+                <otherwise>
+                    gender = 0
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+
+    <update id="updateEmp">
+        update employee
+        <trim suffixOverrides="," prefix="set">
+            <if test="lastName != null">
+                last_name = #{lastName},
+            </if>
+            <if test="email != null">
+                email = #{email},
+            </if>
+            <if test="gender != null">
+                gender = #{gender}
+            </if>
+        </trim>
+        <!--
+            <set>
+                <if test="lastName != null">
+                    last_name = #{lastName},
+                </if>
+                <if test="email != null">
+                    email = #{email},
+                </if>
+                <if test="gender != null">
+                    gender = #{gender}
+                </if>
+            </set>
+        -->
+        where id = #{id}
+    </update>
+
+    <select id="getEmpByConditionIn" resultType="employee">
+        select * from employee where id in
+        /*
+            collection为集合
+            item为集合元素的遍历名称
+            separator为分隔符
+            open为开始标签
+            close为结束标签
+            index:
+                 遍历list和set时为下标
+                 遍历map时,index为key,item为value
+        */
+        <foreach collection="ids" item="item_id" separator="," open="(" close=")">
+            #{item_id}
+        </foreach>
+    </select>
+
+
+    <!--
+        批量保存
+    -->
+    <!--
+        <insert id="batchInsert">
+            insert into employee (last_name, gender, email,dept_id) values
+            <foreach collection="employees" item="emp" separator=",">
+                (#{emp.lastName},#{emp.gender},#{emp.email},#{emp.department.id})
+            </foreach>
+        </insert>
+    -->
+    <!--
+        批量插入执行多条SQL语句,这种批量插入需要在jdbc上添加allowMultiQueries属性
+    -->
+    <insert id="batchInsert">
+        <foreach collection="employees" item="emp" separator=";">
+            insert into employee(
+            <include refid="insertSegment"></include>
+            ) VALUE
+            (#{emp.lastName},#{emp.gender},#{emp.email},#{emp.department.id})
+        </foreach>
+    </insert>
+
+    <select id="testInnerParameter" resultType="employee">
+        select * from
+        /*绑定参数*/
+        <bind name="_lastName" value="'%'+lastName+'%'"/>
+        /*databaseId为内置属性*/
+        <if test="_databaseId == 'mysql'">
+            employee
+            /*参数不为空*/
+            <if test="_parameter != null">
+                where last_name like #{_lastName}
+            </if>
+        </if>
+        <if test="_databaseId == 'oracle'">
+            employees
+        </if>
+    </select>
+
+    <sql id="insertSegment">
+        last_name,gender,email,dept_id
+    </sql>
+</mapper>

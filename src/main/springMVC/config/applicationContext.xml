@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:jars="http://cxf.apache.org/jaxws"
+       xmlns:jaxws="http://cxf.apache.org/jaxws"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       https://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd http://cxf.apache.org/jaxws http://cxf.apache.org/schemas/jaxws.xsd">
+    <context:component-scan base-package="springMVC"/>
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/page/"></property>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+    <!--处理静态资源-->
+    <mvc:default-servlet-handler/>
+    <mvc:annotation-driven/>
+    <!--处理文件上传-->
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <property name="maxUploadSize" value="#{1024 * 1024}"/>
+        <property name="defaultEncoding" value="utf-8" />
+    </bean>
+    <mvc:interceptors>
+        <!--这种配置方式是默认拦截所有请求的-->
+        <bean class="springMVC.interceptor.TestInterceptor"/>
+<!--        <mvc:interceptor>-->
+<!--            <mvc:mapping path="/interceptor/test01"/>-->
+<!--            <bean class="springMVC.interceptor.SecondInterceptor"/>-->
+<!--        </mvc:interceptor>-->
+    </mvc:interceptors>
+    <jaxws:server address="/hello">
+        <jaxws:serviceBean>
+            <bean class="spring.webService.serviceImpl.UserServiceImpl"></bean>
+        </jaxws:serviceBean>
+    </jaxws:server>
+</beans>

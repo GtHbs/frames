@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd">
+    <!--
+        要使用具体的排除和扫描方案必须禁用默认的拦截规则
+    -->
+    <context:component-scan base-package="spring.ioc.bean" use-default-filters="false">
+        <!--
+           指定扫描的类(需要放在排除的类前面)
+       -->
+        <context:include-filter type="assignable" expression="spring.ioc.controller.Controller"/>
+        <!--
+            排除扫描的类:
+                annotation:注解,需要指定注解的全类名
+                assignable:具体类
+                aspectj:拦截aspectj表达式
+                custom:自定义拦截方式,需要实现TypeFilter接口
+                regex:正则表达式
+        -->
+        <context:exclude-filter type="assignable" expression="spring.ioc.service.Service"/>
+    </context:component-scan>
+    <bean id="car" class="spring.ioc.bean.Car">
+        <property name="color" value="green"/>
+    </bean>
+    <!--
+        autoWire自动装配:
+                    default/no:不自动装配
+                    byName:以类中属性名作为id在容器中寻找并为其赋值
+                    byType:以类中属性的类型在容器中寻找,如果容器中有多个就会报错
+                    constructor:
+                            1,先按照参数类型进行装配,没有直接装配为null
+                            2,如果找到多个,将参数名进行匹配
+    -->
+    <bean class="spring.ioc.bean.Person" id="person" autowire="byType"/>
+    <bean class="spring.ioc.bean.Book" id="book">
+        <property name="author" value="lll"/>
+    </bean>
+
+    <!--
+        spel(spring expression language)
+
+    -->
+    <bean class="spring.ioc.bean.Person" id="spelPerson">
+        <property name="age" value="#{20 * 3}"/>
+        <property name="name" value="#{book.author}"/>
+        <property name="car" value="#{car}"/>
+        <!--
+            调用静态方法
+        -->
+        <property name="email" value="#{T(java.util.UUID).randomUUID().toString().substring(0,5)}"/>
+        <property name="gender" value="#{book.getAuthor()}"/>
+    </bean>
+</beans>
